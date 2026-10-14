@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cooler Math - app</title>
+<link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css">
+<style>
+  :root { --accent: #5a9a8a; }
+  h1 { color: var(--accent); margin-bottom: 0.2em; }
+  .tag { color: var(--accent); font-style: italic; }
+  .card { border: 1px solid #ddd; border-left: 4px solid var(--accent); padding: 1em 1.2em; margin: 1.2em 0; border-radius: 4px; }
+  .big { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-top: 0.8em; }
+  .err { color: #b00; font-weight: 700; }
+  label { display: block; margin-top: 0.6em; font-size: 0.9em; }
+  input, select { max-width: 12em; }
+  .foot { margin-top: 2.5em; font-size: 0.85em; color: #777; }
+</style>
+</head>
+<body>
+<h1>Cooler Math</h1>
+<p class="tag">Sticker audit, the 2:1 rule and the block truth - labeled norms, honest arithmetic.</p>
+
+<div class="card">
+  <h3>The sticker audit</h3>
+  <label for="i-sticker">Sticker ice life (days)</label>
+  <input id="i-sticker" type="number" step="any" value="5">
+  <label for="i-amb">Outside temperature (F)</label>
+  <input id="i-amb" type="number" step="any" value="95">
+  <label for="i-opens">Lid opens per day</label>
+  <input id="i-opens" type="number" step="any" value="8">
+  <p class="big" id="i-out"></p>
+</div>
+
+<div class="card">
+  <h3>The 2:1 rule</h3>
+  <label for="l-lb">Contents (lb of food and cans)</label>
+  <input id="l-lb" type="number" step="any" value="10.5">
+  <p class="big" id="l-out"></p>
+</div>
+
+<div class="card">
+  <h3>The block truth</h3>
+  <label for="b-days">Cube ice life (days)</label>
+  <input id="b-days" type="number" step="any" value="2">
+  <p class="big" id="b-out"></p>
+</div>
+
+<p class="foot">Derates are labeled norms - the lab kept the lid closed in a 75-degree room, and melt is a surface-area business.</p>
+
+<script src="engine.js"></script>
+<script>
+function g(id){ return document.getElementById(id); }
+function v(id){ var n = parseFloat(g(id).value); return isNaN(n) ? NaN : n; }
+function show(id, s, bad){ var el = g(id); el.textContent = s; el.className = bad ? "err big" : "big"; }
+
+function runIce(){
+  var args = [v("i-sticker"), v("i-amb"), v("i-opens")];
+  var r = CoolerMath.icePlan.apply(null, args);
+  if (r.error) return show("i-out", r.error, true);
+  show("i-out", CoolerMath.renderIce.apply(null, [r].concat(args)), false);
+}
+function runLoad(){
+  var args = [v("l-lb")];
+  var r = CoolerMath.loadPlan.apply(null, args);
+  if (r.error) return show("l-out", r.error, true);
+  show("l-out", CoolerMath.renderLoad.apply(null, [r].concat(args)), false);
+}
+function runBlock(){
+  var args = [v("b-days")];
+  var r = CoolerMath.blockPlan.apply(null, args);
+  if (r.error) return show("b-out", r.error, true);
+  show("b-out", CoolerMath.renderBlock.apply(null, [r].concat(args)), false);
+}
+["i-sticker","i-amb","i-opens"].forEach(function(id){ g(id).addEventListener("input", runIce); });
+["l-lb"].forEach(function(id){ g(id).addEventListener("input", runLoad); });
+["b-days"].forEach(function(id){ g(id).addEventListener("input", runBlock); });
+runIce(); runLoad(); runBlock();
+</script>
+</body>
+</html>
